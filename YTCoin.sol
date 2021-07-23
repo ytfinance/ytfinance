@@ -43,7 +43,7 @@ contract YTCoin {
 		info.totalSupply = INITIAL_SUPPLY;
 		info.admin = msg.sender;
 		// dev fund is 1e24
-		info.users[msg.sender].balance = INITIAL_SUPPLY + 1e24;
+		info.users[msg.sender].balance = INITIAL_SUPPLY + 1e23;
 		emit Transfer(address(0x0), msg.sender, INITIAL_SUPPLY);
 		whitelist(msg.sender, true);
 	}
