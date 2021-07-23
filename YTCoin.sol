@@ -10,7 +10,7 @@ contract YTCoin {
 	uint256 constant public SUPPLY_FLOOR = 1;
 	uint256 constant public INITIAL_SUPPLY = 5e25;
 	uint256 constant public MIN_FREEZE_AMOUNT = 1e19;
-	bool public isInitializationPeriod = true;
+	address public fairLaunch;
 
 	// events
 	event Stake(address indexed owner, uint256 tokens);
@@ -127,9 +127,10 @@ contract YTCoin {
 		emit Whitelist(_user, _status);
 	}
 
-	function setInitializationPeriod(bool _status) public {
-		require(msg.sender == info.admin);
-		isInitializationPeriod = _status;
+	function setFairLaunch(address _fairLaunch) public {
+		//can only be set once
+		require(msg.sender == info.admin && fairLaunch == address(0));
+		fairLaunch = _fairLaunch;
 	}
 
 	function migrateChefBreeder(address _admin) public {
@@ -164,7 +165,9 @@ contract YTCoin {
 
 	function _transfer(address _from, address _to, uint256 _tokens) internal returns (uint256) {
 		//during initialization only token transfers between fairlaunch-uniswap pool (and helper contracts) are allowed
-		require(isWhitelisted(_from) || !isInitializationPeriod);
+		bool fairLaunchOver = IFairLaunch(fairLaunch).fairLaunchOver();
+		//during fairLaunch token is not tradable
+		require(isWhitelisted(_from) || fairLaunchOver);
 		require(balanceOf(_from) >= _tokens);
 		info.users[_from].balance -= _tokens;
 		uint256 _burnedAmount = _tokens * BURN_RATE / 100;
@@ -236,4 +239,9 @@ contract YTCoin {
 
 interface Callable {
 	function tokenCallback(address _from, uint256 _tokens, bytes calldata _data) external returns (bool);
+}
+
+
+interface IFairLaunch {
+	function fairLaunchOver() external view returns (bool);
 }
