@@ -33,11 +33,6 @@ contract FairLaunch {
     governance = msg.sender;
 	}
 
-  function setLaunchCompleted() public {
-    require(msg.sender == governance);
-    fairLaunchOver = true;
-  }
-
   function transferProjProfit() public {
     require(msg.sender == governance);
     msg.sender.transfer(totalEthPaidGovernance);
@@ -49,7 +44,7 @@ contract FairLaunch {
   }
 
   function addLiquidity() public {
-    require(fairLaunchOver, "cont");
+    require(msg.sender == governance);
     uint _amountA = totalBought;
     uint _amountETH = totalEthPaid;
     IERC20(ytcoin).approve(ROUTER, _amountA);
@@ -61,6 +56,7 @@ contract FairLaunch {
         address(this),
         block.timestamp
       );
+      fairLaunchOver = true;
     emit Launched(_amountA, _amountETH);
   }
 
